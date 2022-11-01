@@ -8,6 +8,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 import { useForm, SubmitHandler } from "react-hook-form";
 import Cookies from "js-cookie";
+
 type Inputs = {
   apiUrl: string;
   printerId: string;
@@ -18,6 +19,8 @@ interface Props {
 }
 
 const DialogSetting = (props: Props) => {
+  const apiUrl: any = localStorage.getItem("apiUrl");
+  const printerId: any = localStorage.getItem("printerId");
   const {
     register,
     handleSubmit,
@@ -25,14 +28,15 @@ const DialogSetting = (props: Props) => {
     formState: { errors },
   } = useForm<Inputs>({
     defaultValues: {
-      apiUrl: Cookies.get('apiUrl'),
-      printerId: Cookies.get('printerId'),
+      apiUrl: apiUrl,
+      printerId: printerId,
     },
   });
   const onSubmit: SubmitHandler<Inputs> = (data) => {
+    console.log(data);
     try {
-      Cookies.set("apiUrl", data.apiUrl);
-      Cookies.set("printerId", data.printerId);
+      localStorage.setItem("apiUrl", data.apiUrl);
+      localStorage.setItem("printerId", data.printerId);
       props.handleClose();
     } catch (error) {}
   };

@@ -11,6 +11,7 @@ import Dialog from "@mui/material/Dialog";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { FetchLogin } from "../utils/AuthApi";
 import Cookies from "js-cookie";
+
 import {
   MemoryRouter as Router,
   Routes,
@@ -42,6 +43,8 @@ const LoginPage = () => {
           "servicePoints",
           JSON.stringify(res.servicePoints)
         );
+        localStorage.setItem("token", res.token);
+
         Cookies.set("token", res.token);
         navigate("/home");
       }
@@ -57,9 +60,9 @@ const LoginPage = () => {
   };
 
   useEffect(() => {
-    localStorage.removeItem('servicePoints')
-  }, [])
-  
+    localStorage.removeItem("servicePoints");
+  }, []);
+
   return (
     <div>
       <AppBar position="static">
