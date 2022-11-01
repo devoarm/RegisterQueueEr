@@ -10,16 +10,18 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import mqtt from "precompiled-mqtt";
 import { FetchGet, FetchPost } from "../utils/FetchApi";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { ListQueue } from "../interfaces/ListQueue";
 import Cookies from "js-cookie";
 import Swal from "sweetalert2";
 import { CardQueue } from "../components/CardQueue";
+import { UrgencyType } from "../interfaces/UrgencyType";
+import { ServicePointType } from "../interfaces/ServicePointType";
+
+const rss: any = localStorage.getItem("servicePoints");
+const service_points: any = JSON.parse(rss);
 
 type Inputs = {
   hn: string;
@@ -30,73 +32,105 @@ interface IProps_Square {
 
 const HomePage = () => {
   const [urgency, setUrgency] = useState("");
+  const [selectServicePoint, setSelectServicePoint] = useState("");
   const [listQueue, setListQueue] = useState<ListQueue[]>([]);
+  const [listUrgency, setListUrgency] = useState<UrgencyType[]>([]);
+
+  const [servicePointList, setServicePointList] =
+    useState<ServicePointType[]>(service_points);
+
+  const [servicePoint, setServicePoint] = useState("");
   const {
     register,
     handleSubmit,
     watch,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<Inputs>();
   const handleRegisQ: SubmitHandler<Inputs> = (data) => {
     let body = {
       hn: data.hn,
-      servicePointId: 19,
+      servicePointId: servicePoint,
       priorityId: 11,
+      urgency: urgency,
     };
-    FetchPost(`/queue/prepare/register/er`, body).then((res: any) => {
-      if (res.statusCode === 200) {
-        FetchPost(`/print/queue/prepare/print`, {
-          queueId: res.queueId,
-          topic: `/printer/${Cookies.get("printerId")}`,
-          printSmallQueue: "N",
-        }).then((res: any) => {
-          if (res.statusCode === 200) {
-            Swal.fire({
-              icon: "success",
-              title: "พิมพ์บัตรคิวสำเร็จ",
-              showConfirmButton: false,
-              timer: 1500,
-            }).then(() => reset());
-          } else {
-            Swal.fire({
-              icon: "error",
-              title: "ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
-              showConfirmButton: false,
-              timer: 1500,
-            });
-          }
-        });
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "ไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
-          showConfirmButton: false,
-          timer: 1500,
-        });
-      }
-    });
+    if (urgency != "" && servicePoint != "" && data.hn != "") {
+      FetchPost(`/queue/prepare/register/er`, body).then((res: any) => {
+        if (res.statusCode === 200) {
+          console.log(res);
+          FetchPost(`/print/queue/prepare/print/er`, {
+            queueId: res.queue_er_id,
+            topic: `/printer/${Cookies.get("printerId")}`,
+            printSmallQueue: "N",
+            urgency: urgency,
+          }).then((res: any) => {
+            if (res.statusCode === 200) {
+              Swal.fire({
+                icon: "success",
+                title: "พิมพ์บัตรคิวสำเร็จ",
+                showConfirmButton: false,
+                timer: 1500,
+              }).then(() => {
+                reset();
+                setUrgency("");
+                fetchQueue(servicePoint);
+              });
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "พิมพ์คิวไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            }
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "สร้างคิวไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        }
+      });
+    } else {
+      Swal.fire({
+        icon: "error",
+        title: "กรุณากรอกข้อมูลให้ครบ",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
   };
-  const handleChange = (event: SelectChangeEvent) => {
+  function handleChange(event: SelectChangeEvent) {
     setUrgency(event.target.value as string);
+  }
+  const handleSearchErQueue = () => {
+    FetchPost("/queue/search-er-queue", { query: getValues("hn") }).then(
+      (res: any) => {
+        setListQueue(res.results);
+      }
+    );
   };
-  const fetchQueue = () => {
-    FetchGet(`/queue/all-register/19`).then((res: any) => {
-      setListQueue(res.results);
+  const handleChangeServicePoint = (event: SelectChangeEvent) => {
+    setServicePoint(event.target.value as string);
+    fetchQueue(event.target.value as string);
+  };
+  const fetchQueue = (servicePointParam: string) => {
+    FetchGet(`/queue/list-register-er/${servicePointParam}`).then(
+      (res: any) => {
+        setListQueue(res.results);
+      }
+    );
+  };
+  const fetchUrgency = () => {
+    FetchGet(`/service-points/urgency/type`).then((res: any) => {
+      setListUrgency(res.results);
     });
   };
   useEffect(() => {
-    fetchQueue();
-    let client: mqtt.MqttClient = mqtt.connect("ws://192.168.3.229:8888", {
-      username: "q4u",
-      password: "##q4u##",
-      clientId: `mqtt_${Math.random().toString(16).slice(3)}`,
-      connectTimeout: 4000,
-      reconnectPeriod: 1000,
-    });
-    client.on("connect", () => {
-      console.log("CONNECTED to broker");
-    });
+    fetchUrgency();
   }, []);
   return (
     <div>
@@ -108,6 +142,24 @@ const HomePage = () => {
         </Toolbar>
       </AppBar>
       <form onSubmit={handleSubmit(handleRegisQ)}>
+        <FormControl margin="normal" variant="filled" fullWidth>
+          <InputLabel id="demo-simple-select-filled-label">แผนก</InputLabel>
+          <Select
+            labelId="demo-simple-select-filled-label"
+            id="demo-simple-select-filled"
+            value={servicePoint}
+            onChange={(event) => handleChangeServicePoint(event)}
+          >
+            <MenuItem value="">
+              <em>None</em>
+            </MenuItem>
+            {servicePointList.map((item: ServicePointType, index) => (
+              <MenuItem key={index} value={item.service_point_id}>
+                {item.service_point_name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         <FormControl margin="normal" variant="filled" fullWidth>
           <InputLabel id="demo-simple-select-filled-label">
             ความเร่งด่วน
@@ -121,11 +173,11 @@ const HomePage = () => {
             <MenuItem value="">
               <em>None</em>
             </MenuItem>
-            <MenuItem value="สีแดง">Resuscitate (กู้ชีพทันที)</MenuItem>
-            <MenuItem value="สีชมพู">Emergency (ฉุกเฉินเร่งด่วน)</MenuItem>
-            <MenuItem value="สีเหลือง">Urgency (ด่วนมาก)</MenuItem>
-            <MenuItem value="สีเขียว">Semi Urgency (ด่วน)</MenuItem>
-            <MenuItem value="สีขาว">Non Urgency (รอได้)</MenuItem>
+            {listUrgency.map((item: UrgencyType) => (
+              <MenuItem key={item.urgency_type_id} value={item.urgency_type_id}>
+                {item.urgency_type_name} ({item.urgency_type_name_th})
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
         <Grid
@@ -161,7 +213,7 @@ const HomePage = () => {
               size="large"
               fullWidth
               color="warning"
-              onClick={() => reset()}
+              onClick={handleSearchErQueue}
             >
               ค้นหา
             </Button>
@@ -169,13 +221,15 @@ const HomePage = () => {
         </Grid>
         {listQueue.map((item: ListQueue, index: number) => (
           <CardQueue
+            key={index}
             queue_number={item.queue_number}
             hn={item.hn}
             title={item.title}
             first_name={item.first_name}
             last_name={item.last_name}
-            queue_id={item.queue_id}
-          />          
+            queue_id={item.queue_er_id}
+            urgency_id={item.urgency_type_id}
+          />
         ))}
       </form>
     </div>

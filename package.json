@@ -73,6 +73,7 @@
     ]
   },
   "devDependencies": {
+    "@types/escpos": "^2.5.2",
     "concurrently": "^7.4.0",
     "cross-env": "^7.0.3",
     "electron": "^20.2.0",

@@ -15,6 +15,7 @@ interface Props {
   last_name: string;
   title: string;
   queue_id: number;
+  urgency_id: number
 }
 
 export const CardQueue = (props: Props) => {
@@ -22,10 +23,11 @@ export const CardQueue = (props: Props) => {
     e: React.MouseEvent<HTMLButtonElement>,
     queue_id?: number
   ) => {
-    FetchPost(`/print/queue/prepare/print`, {
+    FetchPost(`/print/queue/prepare/print/er`, {
       queueId: queue_id,
       topic: `/printer/${Cookies.get("printerId")}`,
       printSmallQueue: "N",
+      urgency: props.urgency_id,
     }).then((res: any) => {
       if (res.statusCode === 200) {
         Swal.fire({

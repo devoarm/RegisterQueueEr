@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import Container from '@mui/material/Container';
-import AppBar from '@mui/material/AppBar';
-import Typography from '@mui/material/Typography';
-import Toolbar from '@mui/material/Toolbar';
-import Button from '@mui/material/Button';
-import DialogSetting from '../components/DialogSetting';
-import Dialog from '@mui/material/Dialog';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { FetchLogin } from '../utils/AuthApi';
-import Cookies from 'js-cookie'
+import React, { useState, useEffect } from "react";
+import Box from "@mui/material/Box";
+import TextField from "@mui/material/TextField";
+import Container from "@mui/material/Container";
+import AppBar from "@mui/material/AppBar";
+import Typography from "@mui/material/Typography";
+import Toolbar from "@mui/material/Toolbar";
+import Button from "@mui/material/Button";
+import DialogSetting from "../components/DialogSetting";
+import Dialog from "@mui/material/Dialog";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { FetchLogin } from "../utils/AuthApi";
+import Cookies from "js-cookie";
 import {
   MemoryRouter as Router,
   Routes,
   Route,
   useNavigate,
-} from 'react-router-dom';
+} from "react-router-dom";
 
 type Inputs = {
   username: string;
@@ -34,13 +34,16 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = (data) => {
-    console.log(data)
-    FetchLogin('login', data).then((res: any) => {
+    console.log(data);
+    FetchLogin("login", data).then((res: any) => {
       console.log(res);
       if (res.statusCode == 200) {
-        Cookies.set('servicePoints',JSON.stringify(res.servicePoints))
-        Cookies.set('token',res.token)
-        navigate('/home');
+        localStorage.setItem(
+          "servicePoints",
+          JSON.stringify(res.servicePoints)
+        );
+        Cookies.set("token", res.token);
+        navigate("/home");
       }
     });
   };
@@ -53,6 +56,10 @@ const LoginPage = () => {
     setOpen(false);
   };
 
+  useEffect(() => {
+    localStorage.removeItem('servicePoints')
+  }, [])
+  
   return (
     <div>
       <AppBar position="static">
@@ -78,9 +85,9 @@ const LoginPage = () => {
           <Box
             sx={{
               marginTop: 8,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
             <Typography component="h1" variant="h5">
@@ -93,7 +100,7 @@ const LoginPage = () => {
               label="บัญชีผู้ใช้"
               autoComplete="email"
               autoFocus
-              {...register('username', { required: true })}
+              {...register("username", { required: true })}
             />
             {errors.username && <span>กรุณากรอกบัญชีผู้ใช้</span>}
 
@@ -104,7 +111,7 @@ const LoginPage = () => {
               type="password"
               id="password"
               autoComplete="current-password"
-              {...register('password', { required: true })}
+              {...register("password", { required: true })}
             />
             {errors.password && <span>กรุณากรอกบัญชีผู้ใช้</span>}
             <Button
