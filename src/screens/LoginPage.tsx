@@ -44,8 +44,6 @@ const LoginPage = () => {
           JSON.stringify(res.servicePoints)
         );
         localStorage.setItem("token", res.token);
-
-        Cookies.set("token", res.token);
         navigate("/home");
       }
     });

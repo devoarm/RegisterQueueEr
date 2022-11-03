@@ -1,9 +1,11 @@
 import Cookies from "js-cookie";
 
 export const FetchGet = async (path: string): Promise<any> => {
-  const res = await fetch(`${Cookies.get("apiUrl")}${path}`, {
+  const apiUrl: any = localStorage.getItem("apiUrl");
+  const token: any = localStorage.getItem("token");
+  const res = await fetch(`${apiUrl}${path}`, {
     headers: {
-      Authorization: `Bearer ${Cookies.get("token")}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     },
   });
@@ -15,15 +17,17 @@ export const FetchGet = async (path: string): Promise<any> => {
 };
 
 export const FetchPost = async (path: string, data: any): Promise<any> => {
+  const apiUrl: any = localStorage.getItem("apiUrl");
+  const token: any = localStorage.getItem("token");
   const requestOptions = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${Cookies.get("token")}`,
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(data),
   };
-  const res = await fetch(`${Cookies.get("apiUrl")}${path}`, requestOptions);
+  const res = await fetch(`${apiUrl}${path}`, requestOptions);
   // need to do this with fetch since doesn't automatically throw errors axios and graphql-request do
   if (res.ok) {
     return res.json();

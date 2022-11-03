@@ -21,6 +21,8 @@ import { UrgencyType } from "../interfaces/UrgencyType";
 import { ServicePointType } from "../interfaces/ServicePointType";
 
 const rss: any = localStorage.getItem("servicePoints");
+const rspi:any = localStorage.getItem("servicePointId")
+const rsPrinterId:any = localStorage.getItem("printerId")
 const service_points: any = JSON.parse(rss);
 
 type Inputs = {
@@ -33,12 +35,13 @@ interface IProps_Square {
 const HomePage = () => {
   const [urgency, setUrgency] = useState("");
   const [selectServicePoint, setSelectServicePoint] = useState("");
+  const [servicePointId, setServicePointId] = useState(rspi||"")
+  const [printerId, setPrinterId] = useState(rsPrinterId||"")
   const [listQueue, setListQueue] = useState<ListQueue[]>([]);
   const [listUrgency, setListUrgency] = useState<UrgencyType[]>([]);
 
   const [servicePointList, setServicePointList] =
-    useState<ServicePointType[]>(service_points);
-
+    useState<ServicePointType[]>([]);
   const [servicePoint, setServicePoint] = useState("");
   const {
     register,
@@ -51,17 +54,17 @@ const HomePage = () => {
   const handleRegisQ: SubmitHandler<Inputs> = (data) => {
     let body = {
       hn: data.hn,
-      servicePointId: servicePoint,
-      priorityId: 11,
+      servicePointId: servicePointId,
+      // priorityId: 11,
       urgency: urgency,
     };
-    if (urgency != "" && servicePoint != "" && data.hn != "") {
+    if (urgency != "" && data.hn != "") {
       FetchPost(`/queue/prepare/register/er`, body).then((res: any) => {
         if (res.statusCode === 200) {
           console.log(res);
           FetchPost(`/print/queue/prepare/print/er`, {
             queueId: res.queue_er_id,
-            topic: `/printer/${Cookies.get("printerId")}`,
+            topic: `/printer/${rsPrinterId}`,
             printSmallQueue: "N",
             urgency: urgency,
           }).then((res: any) => {
@@ -74,7 +77,7 @@ const HomePage = () => {
               }).then(() => {
                 reset();
                 setUrgency("");
-                fetchQueue(servicePoint);
+                fetchQueue();
               });
             } else {
               Swal.fire({
@@ -115,10 +118,10 @@ const HomePage = () => {
   };
   const handleChangeServicePoint = (event: SelectChangeEvent) => {
     setServicePoint(event.target.value as string);
-    fetchQueue(event.target.value as string);
+    fetchQueue();
   };
-  const fetchQueue = (servicePointParam: string) => {
-    FetchGet(`/queue/list-register-er/${servicePointParam}`).then(
+  const fetchQueue = () => {
+    FetchGet(`/queue/list-register-er/${servicePointId}`).then(
       (res: any) => {
         setListQueue(res.results);
       }
@@ -131,6 +134,8 @@ const HomePage = () => {
   };
   useEffect(() => {
     fetchUrgency();
+    fetchQueue()
+
   }, []);
   return (
     <div>
@@ -142,7 +147,7 @@ const HomePage = () => {
         </Toolbar>
       </AppBar>
       <form onSubmit={handleSubmit(handleRegisQ)}>
-        <FormControl margin="normal" variant="filled" fullWidth>
+        {/* <FormControl margin="normal" variant="filled" fullWidth>
           <InputLabel id="demo-simple-select-filled-label">แผนก</InputLabel>
           <Select
             labelId="demo-simple-select-filled-label"
@@ -153,13 +158,14 @@ const HomePage = () => {
             <MenuItem value="">
               <em>None</em>
             </MenuItem>
-            {servicePointList.map((item: ServicePointType, index) => (
-              <MenuItem key={index} value={item.service_point_id}>
-                {item.service_point_name}
-              </MenuItem>
-            ))}
+            {servicePointList.map(
+              (item: ServicePointType, index: number) => (
+                <MenuItem key={index} value={item.service_point_id}>{item.service_point_name}</MenuItem>
+              )
+            )}
           </Select>
         </FormControl>
+    */}
         <FormControl margin="normal" variant="filled" fullWidth>
           <InputLabel id="demo-simple-select-filled-label">
             ความเร่งด่วน

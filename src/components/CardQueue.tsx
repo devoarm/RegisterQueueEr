@@ -1,4 +1,4 @@
-import React from "react";
+import React,{useState} from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Grid from "@mui/material/Grid";
@@ -7,6 +7,7 @@ import Button from "@mui/material/Button";
 import Swal from "sweetalert2";
 import { FetchGet, FetchPost } from "../utils/FetchApi";
 import Cookies from "js-cookie";
+const rsPrinterId:any = localStorage.getItem("printerId")
 
 interface Props {
   hn: string;
@@ -19,13 +20,14 @@ interface Props {
 }
 
 export const CardQueue = (props: Props) => {
+  const [printerId, setPrinterId] = useState(rsPrinterId||"")
   const handlePrintQ = (
     e: React.MouseEvent<HTMLButtonElement>,
     queue_id?: number
   ) => {
     FetchPost(`/print/queue/prepare/print/er`, {
       queueId: queue_id,
-      topic: `/printer/${Cookies.get("printerId")}`,
+      topic: `/printer/${printerId}`,
       printSmallQueue: "N",
       urgency: props.urgency_id,
     }).then((res: any) => {

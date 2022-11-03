@@ -12,6 +12,7 @@ import Cookies from "js-cookie";
 type Inputs = {
   apiUrl: string;
   printerId: string;
+  servicePointId: string;
 };
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
 const DialogSetting = (props: Props) => {
   const apiUrl: any = localStorage.getItem("apiUrl");
   const printerId: any = localStorage.getItem("printerId");
+  const servicePointId: any = localStorage.getItem("servicePointId");
   const {
     register,
     handleSubmit,
@@ -30,6 +32,7 @@ const DialogSetting = (props: Props) => {
     defaultValues: {
       apiUrl: apiUrl,
       printerId: printerId,
+      servicePointId: servicePointId,
     },
   });
   const onSubmit: SubmitHandler<Inputs> = (data) => {
@@ -37,6 +40,7 @@ const DialogSetting = (props: Props) => {
     try {
       localStorage.setItem("apiUrl", data.apiUrl);
       localStorage.setItem("printerId", data.printerId);
+      localStorage.setItem("servicePointId", data.servicePointId);
       props.handleClose();
     } catch (error) {}
   };
@@ -63,6 +67,15 @@ const DialogSetting = (props: Props) => {
             label="PrinterID"
             {...register("printerId")}
             autoComplete="printerId"
+            autoFocus
+          />
+          <TextField
+            margin="normal"
+            fullWidth
+            id="ErservicePointId"
+            label="ErServicePointId"
+            {...register("servicePointId")}
+            autoComplete="servicePointId"
             autoFocus
           />
         </DialogContent>

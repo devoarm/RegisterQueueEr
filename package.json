@@ -1,6 +1,6 @@
 {
-  "name": "my-app",
-  "version": "0.2.0",
+  "name": "register-queue-er",
+  "version": "0.1.0",
   "author": "Your Name",
   "description": "React-TypeScript-Electron sample with Create React App and Electron Builder",
   "homepage": ".",
@@ -43,9 +43,22 @@
     "postinstall": "electron-builder install-app-deps",
     "electron:dev": "concurrently \"cross-env BROWSER=none yarn start\" \"wait-on http://127.0.0.1:3000 && tsc -p electron -w\" \"wait-on http://127.0.0.1:3000 && tsc -p electron && electron .\"",
     "electron:build": "yarn build && tsc -p electron && electron-builder",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "dist": "electron-builder"
   },
   "build": {
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "icon": "src/assets/images/icon/icon.png"
+    },
     "extends": null,
     "files": [
       "build/**/*"
